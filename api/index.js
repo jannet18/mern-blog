@@ -5,15 +5,19 @@ const { default: mongoose } = require("mongoose");
 const User = require("./models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 
 const salt = bcrypt.genSaltSync(10);
+const secret = "abshldgaisfgiewufguiewgfu";
 
 app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use(express.json());
+app.use(cookieParser());
 
 mongoose.connect(
-  "mongodb+srv://jannylynemiaz:s1kKMGLLnjgl1EIV@cluster0.zpvtryi.mongodb.net/?retryWrites=true&w=majority"
+  "mongodb+srv://test:gDE1v10dz2uZ5i7t@cluster0.a6flela.mongodb.net/?retryWrites=true&w=majority"
 );
+
 app.post("/register", async (req, res) => {
   // Create user
   const { username, password } = req.body;
@@ -29,21 +33,25 @@ app.post("/register", async (req, res) => {
 });
 
 // user login
-app.post("/login"),
-  async (req, res) => {
-    const { username, password } = req.body;
-    const userDoc = await User.findOne({ username: username });
-    const passok = bcrypt.compareSync(password, userDoc.password);
-    if (passok) {
-      // login
-      jwt.sign({ username, id: userDoc._id }, secret, {}, (err, token) => {
-        if (err) throw err;
-        res.json(token);
-      });
-    } else {
-      res.status(400).json("wrong credentials");
-    }
-    res.json(passok);
-    console.log(userDoc);
-  };
+app.post("/login", async (req, res) => {
+  const { username, password } = req.body;
+  const userDoc = await User.findOne({ username: username });
+  const passok = bcrypt.compareSync(password, userDoc.password);
+  if (passok) {
+    // login
+    jwt.sign({ username, id: userDoc._id }, secret, {}, (err, token) => {
+      if (err) throw err;
+      res.json(token);
+    });
+  } else {
+    res.status(400).json("wrong credentials");
+  }
+  res.json(passok);
+  console.log(userDoc);
+});
+
+app.get("/profile", (req, res) => {
+  const { token } = req.cookies;
+  res.json(req.cookies);
+});
 app.listen(4000);
