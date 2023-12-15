@@ -8,7 +8,7 @@ const jwt = require("jsonwebtoken");
 
 const salt = bcrypt.genSaltSync(10);
 
-app.use(cors());
+app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use(express.json());
 
 mongoose.connect(
@@ -46,4 +46,4 @@ app.post("/login"),
     res.json(passok);
     console.log(userDoc);
   };
-app.listen(5000);
+app.listen(4000);
