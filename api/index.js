@@ -3,10 +3,12 @@ const app = express();
 const cors = require("cors");
 const { default: mongoose } = require("mongoose");
 const User = require("./models/user");
+const Post = require("./models/post");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const multer = require("multer");
+const fs = require("fs");
 
 const uploadMiddleware = multer({ dest: "./uploads" });
 const salt = bcrypt.genSaltSync(10);
@@ -66,10 +68,34 @@ app.get("/profile", (req, res) => {
 });
 
 // create
-app.post("/post", uploadMiddleware.single("file"), (req, res) => {
-  // const {} = req.body;
-  res.json({ files: req.file });
-  // res.json(req.files);
+app.post("/post", uploadMiddleware.single("file"), async (req, res) => {
+  const { originalname, path } = req.file;
+  const parts = originalname.split(".");
+  const ext = parts[parts.length - 1];
+  const newPath = path + "." + ext;
+  fs.renameSync(path, newPath);
+
+  const { title, summary, content } = req.body;
+  const { token } = req.cookies;
+  jwt.verify(token, secret, {}, async (err, info) => {
+    if (err) throw err;
+    const postDoc = await Post.create({
+      title,
+      summary,
+      content,
+      cover: newPath,
+      author: info.id,
+    });
+    res.json(info);
+  });
+
+  // res.json(postDoc);
+});
+
+// get all posts
+app.get("/post", async (req, res) => {
+  const posts = await Post.find().populate("author", ["username"]);
+  res.json(posts);
 });
 
 // logout
