@@ -6,7 +6,9 @@ const User = require("./models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+const multer = require("multer");
 
+const uploadMiddleware = multer({ dest: "./uploads" });
 const salt = bcrypt.genSaltSync(10);
 const secret = "abshldgaisfgiewufguiewgfu";
 
@@ -60,7 +62,14 @@ app.get("/profile", (req, res) => {
     if (err) throw err;
     res.json(info);
   });
-  res.json(req.cookies);
+  // res.json(req.cookies);
+});
+
+// create
+app.post("/post", uploadMiddleware.single("file"), (req, res) => {
+  // const {} = req.body;
+  res.json({ files: req.file });
+  // res.json(req.files);
 });
 
 // logout
