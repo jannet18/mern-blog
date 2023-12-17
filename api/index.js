@@ -10,13 +10,14 @@ const cookieParser = require("cookie-parser");
 const multer = require("multer");
 const fs = require("fs");
 
-const uploadMiddleware = multer({ dest: "./uploads" });
+const uploadMiddleware = multer({ dest: "uploads/" });
 const salt = bcrypt.genSaltSync(10);
 const secret = "abshldgaisfgiewufguiewgfu";
 
 app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use(express.json());
 app.use(cookieParser());
+app.use("/uploads", express.static(__dirname + "/uploads"));
 
 mongoose.connect(
   "mongodb+srv://test:gDE1v10dz2uZ5i7t@cluster0.a6flela.mongodb.net/?retryWrites=true&w=majority"
@@ -86,18 +87,29 @@ app.post("/post", uploadMiddleware.single("file"), async (req, res) => {
       cover: newPath,
       author: info.id,
     });
-    res.json(info);
+    // res.json(info);
+    res.json(postDoc);
   });
-
-  // res.json(postDoc);
 });
 
 // get all posts
 app.get("/post", async (req, res) => {
-  const posts = await Post.find().populate("author", ["username"]);
+  const posts = await Post.find()
+    .populate("author", ["username"])
+    .sort({ createdAt: -1 })
+    .limit(20);
   res.json(posts);
 });
 
+// get specific id
+app.get("/post/:id", async (req, res) => {
+  const { id } = req.params;
+  const postDoc = await Post.findById(id).populate("author", [
+    "username",
+    "content",
+  ]);
+  res.json(postDoc);
+});
 // logout
 app.post("/logout", (req, res) => {
   res.cookie("token", "").json("ok");
