@@ -9,6 +9,8 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const multer = require("multer");
 const fs = require("fs");
+const connectDB = require("./models/connectDB");
+const PORT = process.env.PORT || 4000;
 
 const uploadMiddleware = multer({ dest: "uploads/" });
 const salt = bcrypt.genSaltSync(10);
@@ -151,4 +153,7 @@ app.post("/logout", (req, res) => {
   res.cookie(token, "", { path: "/app" }).json("ok");
   // }
 });
-app.listen(4000);
+app.listen(PORT),
+  () => {
+    console.log(`Server started on ${PORT}`);
+  };
