@@ -110,9 +110,46 @@ app.get("/post/:id", async (req, res) => {
   ]);
   res.json(postDoc);
 });
+
+app.put("/post", uploadMiddleware.single("file"), async (req, res) => {
+  // check new path, update if new
+  // verify token is proportional to post doc
+  // update info
+  let newPath = null;
+  if (req.file) {
+    const { originalname, path } = req.file;
+    const parts = originalname.split(".");
+    const ext = parts[parts.length - 1];
+    newPath = path + "." + ext;
+    fs.renameSync(path, newPath);
+  }
+  const { token } = req.cookies;
+  jwt.verify(token, secret, {}, async (err, info) => {
+    if (err) throw err;
+    // check post
+    const { id, title, summary, content } = req.body;
+    const postDoc = await Post.findById(id);
+    const isAuthor =
+      JSON.stringify(postDoc.author) === JSON.stringify(info?.id);
+    if (!isAuthor) {
+      return res.status(400).json("you are not the author");
+    }
+    await postDoc.updateOne({
+      title,
+      summary,
+      content,
+      cover: newPath ? newPath : postDoc.cover,
+    });
+    res.json(postDoc);
+  });
+});
+
 // logout
 app.post("/logout", (req, res) => {
-  res.cookie("token", "").json("ok");
-  console.log("logged out");
+  const { username } = req.body;
+  if (username) {
+    res.cookie("token", "").json("ok");
+    console.log("logged out");
+  }
 });
 app.listen(4000);
