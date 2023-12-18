@@ -144,12 +144,11 @@ app.put("/post", uploadMiddleware.single("file"), async (req, res) => {
   });
 });
 
-// logout
+// logout;
 app.post("/logout", (req, res) => {
-  const { username } = req.body;
-  if (username) {
-    res.cookie("token", "").json("ok");
-    console.log("logged out");
-  }
+  const { token } = req.body;
+  // console.log(token);
+  res.cookie(token, "", { path: "/app" }).json("ok");
+  // }
 });
 app.listen(4000);
