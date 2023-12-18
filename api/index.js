@@ -10,7 +10,8 @@ const cookieParser = require("cookie-parser");
 const multer = require("multer");
 const fs = require("fs");
 const connectDB = require("./models/connectDB");
-const PORT = process.env.PORT || 4000;
+let PORT = "https://blog-backend-q1yl.onrender.com";
+PORT = process.env.PORT || 4000;
 
 const uploadMiddleware = multer({ dest: "uploads/" });
 const salt = bcrypt.genSaltSync(10);
@@ -21,9 +22,8 @@ app.use(express.json());
 app.use(cookieParser());
 app.use("/uploads", express.static(__dirname + "/uploads"));
 
-mongoose.connect(
-  "mongodb+srv://test:gDE1v10dz2uZ5i7t@cluster0.a6flela.mongodb.net/?retryWrites=true&w=majority"
-);
+// mongoose.connect(connectDB);
+connectDB();
 
 app.post("/register", async (req, res) => {
   // Create user
